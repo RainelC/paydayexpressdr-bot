@@ -67,6 +67,7 @@ async def whatsapp_webhook(
             value = change.value
             for msg in value.messages:
                 if msg.type != "text":
+                    logger.debug("Skipping non-text message type=%s id=%s", msg.type, msg.id)
                     continue
 
                 # Resolve profile name from contacts if available

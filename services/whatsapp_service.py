@@ -49,6 +49,9 @@ async def send_whatsapp_message(to: str, body: str) -> str:
 
     response.raise_for_status()
     data = response.json()
-    message_id: str = data["messages"][0]["id"]
+    try:
+        message_id: str = data["messages"][0]["id"]
+    except (KeyError, IndexError) as exc:
+        raise ValueError(f"Unexpected WhatsApp API response: {data}") from exc
     logger.info("Sent WhatsApp message id=%s to=%s", message_id, to)
     return message_id
