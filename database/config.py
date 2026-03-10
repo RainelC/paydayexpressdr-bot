@@ -4,10 +4,10 @@ from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
 class Settings(BaseSettings):
-    # Twilio credentials
-    twilio_account_sid: str = "TWILIO_ACCOUNT_SID"
-    twilio_auth_token: str = "TWILIO_AUTH_TOKEN"
-    twilio_whatsapp_from: str = "whatsapp:+14155238886"
+    # Meta WhatsApp Business API credentials
+    whatsapp_api_token: str = "WHATSAPP_API_TOKEN"
+    whatsapp_phone_number_id: str = "WHATSAPP_PHONE_NUMBER_ID"
+    whatsapp_verify_token: str = "WHATSAPP_VERIFY_TOKEN"
 
     # Database (defaults to async SQLite for development)
     database_url: str = "sqlite+aiosqlite:///./bot.db"

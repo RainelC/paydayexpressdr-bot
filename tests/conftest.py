@@ -11,9 +11,9 @@ from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker, create_asyn
 
 # Use an in-memory SQLite database for tests so nothing is written to disk
 os.environ.setdefault("DATABASE_URL", "sqlite+aiosqlite:///:memory:")
-os.environ.setdefault("TWILIO_ACCOUNT_SID", "ACtest")
-os.environ.setdefault("TWILIO_AUTH_TOKEN", "testtoken")
-os.environ.setdefault("TWILIO_WHATSAPP_FROM", "whatsapp:+14155238886")
+os.environ.setdefault("WHATSAPP_API_TOKEN", "test_api_token")
+os.environ.setdefault("WHATSAPP_PHONE_NUMBER_ID", "123456789")
+os.environ.setdefault("WHATSAPP_VERIFY_TOKEN", "test_verify_token")
 
 from database.connection import Base, get_db  # noqa: E402 – must come after env setup
 from main import app  # noqa: E402

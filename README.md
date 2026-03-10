@@ -1,10 +1,11 @@
 # PayDay Express DR – WhatsApp Bot
 
-A professional-grade WhatsApp chatbot built with **FastAPI** and **Twilio**, designed to handle loan-related customer interactions for PayDay Express DR.
+A professional-grade WhatsApp chatbot built with **FastAPI** and the **Meta WhatsApp Business Cloud API**, designed to handle loan-related customer interactions for PayDay Express DR.
 
 ## Features
 
-- **Inbound message handling** via a Twilio webhook with a guided menu (FAQ, loan status, contact)
+- **Inbound message handling** via a Meta WhatsApp Cloud API webhook with a guided menu (FAQ, loan status, contact)
+- **Webhook verification** endpoint for the Meta App Dashboard registration flow
 - **Conversation state machine** that tracks each user's position in the chat flow
 - **FAQ system** with pre-built answers for the most common questions
 - **Loan status lookup** (stub; plug in your loan-management database)
@@ -24,14 +25,14 @@ paydayexpressdr-bot/
 ├── pytest.ini               # Pytest configuration
 ├── .env.example             # Environment variable template
 ├── routers/
-│   ├── webhook.py           # POST /webhook/twilio  – inbound message handler
+│   ├── webhook.py           # GET /webhook/whatsapp (verification) & POST /webhook/whatsapp (inbound)
 │   └── notifications.py     # POST /notifications/push – outbound push endpoint
 ├── services/
 │   ├── message_parser.py    # Conversation state machine & FAQ logic
 │   ├── state_manager.py     # In-memory + DB state cache
-│   └── twilio_service.py    # Async Twilio REST API client
+│   └── whatsapp_service.py  # Async Meta WhatsApp Cloud API client
 ├── models/
-│   ├── webhook.py           # Pydantic schemas for Twilio webhook payload
+│   ├── webhook.py           # Pydantic schemas for Meta WhatsApp webhook payload
 │   └── notification.py      # Pydantic schemas for push-notification request/response
 ├── database/
 │   ├── config.py            # Pydantic-settings (loads .env)
@@ -55,9 +56,9 @@ cp .env.example .env
 
 | Variable | Description | Default |
 |---|---|---|
-| `TWILIO_ACCOUNT_SID` | Twilio Account SID (starts with `AC`) | *(required)* |
-| `TWILIO_AUTH_TOKEN` | Twilio Auth Token | *(required)* |
-| `TWILIO_WHATSAPP_FROM` | Your Twilio WhatsApp sandbox/sender number with `whatsapp:` prefix | `whatsapp:+14155238886` |
+| `WHATSAPP_API_TOKEN` | Permanent access token from the Meta App Dashboard | *(required)* |
+| `WHATSAPP_PHONE_NUMBER_ID` | Phone Number ID from the Meta WhatsApp Business settings | *(required)* |
+| `WHATSAPP_VERIFY_TOKEN` | A secret string you choose for webhook verification | *(required)* |
 | `DATABASE_URL` | SQLAlchemy async connection string | `sqlite+aiosqlite:///./bot.db` |
 | `DEBUG` | Enable SQLAlchemy query echo | `false` |
 | `LOG_LEVEL` | Python logging level | `INFO` |
@@ -84,7 +85,7 @@ pip install -r requirements.txt
 
 ```bash
 cp .env.example .env
-# Edit .env with your Twilio credentials
+# Edit .env with your Meta WhatsApp Business API credentials
 ```
 
 ### 3. Start the server
@@ -95,7 +96,7 @@ uvicorn main:app --host 0.0.0.0 --port 8000 --reload
 
 The API documentation is available at `http://localhost:8000/docs`.
 
-### 4. Expose to the internet (Twilio webhook)
+### 4. Expose to the internet (Meta webhook)
 
 Use [ngrok](https://ngrok.com/) or a similar tunnel to expose the local server:
 
@@ -103,18 +104,21 @@ Use [ngrok](https://ngrok.com/) or a similar tunnel to expose the local server:
 ngrok http 8000
 ```
 
-Then set the Twilio WhatsApp sandbox webhook URL to:
+Then set the Meta WhatsApp webhook URL in the App Dashboard to:
 
 ```
-https://<your-ngrok-id>.ngrok.io/webhook/twilio
+https://<your-ngrok-id>.ngrok.io/webhook/whatsapp
 ```
 
 ---
 
 ## API Endpoints
 
-### `POST /webhook/twilio`
-Receives inbound WhatsApp messages from Twilio. Configured as the webhook URL in the Twilio console.
+### `GET /webhook/whatsapp`
+Handles the one-time verification challenge sent by Meta when registering the webhook URL. Returns the `hub.challenge` value when the `hub.verify_token` matches.
+
+### `POST /webhook/whatsapp`
+Receives inbound WhatsApp messages from the Meta Cloud API. Configured as the webhook URL in the Meta App Dashboard.
 
 ### `POST /notifications/push`
 Send a proactive notification to a specific user. Triggered by external events (e.g., loan approval).
@@ -132,7 +136,7 @@ Send a proactive notification to a specific user. Triggered by external events (
 ```json
 {
   "success": true,
-  "message_sid": "SMxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
+  "message_sid": "wamid.xxxxxxxxxxxxxxxx"
 }
 ```
 

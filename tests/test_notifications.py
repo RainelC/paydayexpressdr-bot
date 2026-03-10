@@ -8,14 +8,14 @@ import pytest
 from httpx import AsyncClient
 
 PUSH_URL = "/notifications/push"
-_MOCK_SID = "SMnotify0000000000000000000000000"
+_MOCK_MSG_ID = "wamid.notify0000000000000000000000"
 
 
 @pytest.mark.asyncio
 @patch(
     "routers.notifications.send_whatsapp_message",
     new_callable=AsyncMock,
-    return_value=_MOCK_SID,
+    return_value=_MOCK_MSG_ID,
 )
 async def test_push_notification_success(mock_send, client: AsyncClient):
     """A valid push request should return success=True and a message_sid."""
@@ -28,7 +28,7 @@ async def test_push_notification_success(mock_send, client: AsyncClient):
     assert response.status_code == 200
     data = response.json()
     assert data["success"] is True
-    assert data["message_sid"] == _MOCK_SID
+    assert data["message_sid"] == _MOCK_MSG_ID
     mock_send.assert_awaited_once()
 
 
@@ -36,10 +36,10 @@ async def test_push_notification_success(mock_send, client: AsyncClient):
 @patch(
     "routers.notifications.send_whatsapp_message",
     new_callable=AsyncMock,
-    side_effect=Exception("Twilio error"),
+    side_effect=Exception("WhatsApp API error"),
 )
 async def test_push_notification_failure(mock_send, client: AsyncClient):
-    """When Twilio raises an exception, the endpoint should return success=False."""
+    """When the WhatsApp API raises an exception, the endpoint should return success=False."""
     payload = {
         "recipient": "+18095550088",
         "message": "Test failure message",
@@ -48,7 +48,7 @@ async def test_push_notification_failure(mock_send, client: AsyncClient):
     assert response.status_code == 200
     data = response.json()
     assert data["success"] is False
-    assert "Twilio error" in data["detail"]
+    assert "WhatsApp API error" in data["detail"]
 
 
 @pytest.mark.asyncio
@@ -71,7 +71,7 @@ async def test_push_notification_missing_message(client: AsyncClient):
 @patch(
     "routers.notifications.send_whatsapp_message",
     new_callable=AsyncMock,
-    return_value=_MOCK_SID,
+    return_value=_MOCK_MSG_ID,
 )
 async def test_push_notification_without_loan_id(mock_send, client: AsyncClient):
     """loan_id is optional – request should succeed without it."""
