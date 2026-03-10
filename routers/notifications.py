@@ -10,7 +10,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from database.connection import get_db
 from database.orm_models import MessageLog
 from models.notification import PushNotificationRequest, PushNotificationResponse
-from services.twilio_service import send_whatsapp_message
+from services.whatsapp_service import send_whatsapp_message
 
 logger = logging.getLogger(__name__)
 

@@ -45,7 +45,8 @@ async def lifespan(application: FastAPI) -> AsyncGenerator[None, None]:
 app = FastAPI(
     title="PayDay Express DR – WhatsApp Bot",
     description=(
-        "Professional-grade WhatsApp Bot built with FastAPI and Twilio.\n\n"
+        "Professional-grade WhatsApp Bot built with FastAPI and the Meta WhatsApp Business "
+        "Cloud API.\n\n"
         "Handles inbound messages, a guided conversation menu (FAQ + loan-status), "
         "and proactive push notifications for external status-change events."
     ),
